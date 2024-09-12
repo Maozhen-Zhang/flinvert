@@ -1,0 +1,186 @@
+DEVICE: cuda:0  # cuda:0、mps
+dataset: cifar10 # mnist、femnist、cifar10、cifar100、tiny-imagenet
+root_path: /home/zmz/datasets/ #/Users/maozhenzhang/datasets
+model: resnet18 # cnn、simple、alex_cifar、resnet18、resnet34、
+Normalize: False
+batch_size: 64
+agg_lr: 0.5
+lr: 0.01
+momentum: 0.9
+weight_decay: 0.0005
+
+epoch: 200
+local_epoch: 2
+
+# FedAvg, Krum, MKrum, Trimmedmean,Median, RLR, TACRC, OneShotDefense
+defense: FedAvg
+attack: NoAtt  # NoAtt、Fang、LIE、MinMax、MinSum、DBA、ORIDBA、Compose
+benign: NoAtt
+
+sample_client: 10
+n_client: 20
+n_mal: 4
+
+
+Resume:
+  IsResume: False
+  ResumeModelPath: ./infors/saved_models/cifar_pretrain/model_last.pt.tar.epoch_200
+  #  /home/zmz/experiments/FLFrame/infors/Result-cifar10-resnet18-DBA-FedAvg-NonIID-0.5/Epoch-
+
+  BeginEpoch: 199
+
+
+
+MalSetting:
+  isfixed: False
+  MalNumPerRound: 4 # 如果isfixed为False，该参数无效
+  MalIDs: [ 0, 1, 2, 3 ]
+  PoisonProportion: 5
+  BackdoorLabel: 2
+  DefenseMethods: [ 'FedAvg','Krum','MKrum','TACRC','OneShotDefense','CDP', 'RLR','AFA','DeFL','CRFL' ]
+  BackdoorMethods: [ 'CBA','DBA','ORIDBA','F3BA' , 'Composite' ]
+  RobustMethods: [ 'NoAtt','Fang','LIE','MinMax','MinSum' ]
+
+
+
+
+
+heterogenuity:
+  is_heterogenuity: True
+  dirichlet_alpha: 0.5
+
+
+Print:
+  PrintClientAcc: Fasle
+  PrintTriggerInfo: Fasle
+
+logger:
+  logger_name: fl-log
+  level: DEBUG
+
+
+wandb:
+  is_wandb: false
+  project: fl-att-client-20
+  group:
+  name: test
+
+
+MKrum:
+
+TACRC:
+  CleanID: [ 0 ]
+  KNeuron: 5000
+  Cosine: True
+  KDis: True
+  GradDiff: True
+  CleanDatasetsSize: 500
+
+
+
+# Robust Attack
+NoAtt:
+  BeginAttackEpoch: -1
+  AttackEpoch: [ ]
+  poison_lr: 0.01
+  poison_momentum: 0.9
+  poison_decay: 0.0005
+
+
+# Backdoor Attack
+CBA:
+  BeginAttackEpoch: -1
+  AttackEpoch: [ ]
+  poison_epoch: 2
+  poison_lr: 0.01
+  poison_momentum: 0.9
+  poison_decay: 0.0005
+  ScaleLambda: [ 0.6, 0.4 ]
+  SimLambda: 0.1
+DBA:
+  BeginAttackEpoch: -1
+  AttackEpoch: [ ]
+  poison_epoch: 2
+  poison_lr: 0.01
+  poison_momentum: 0.9
+  poison_decay: 0.0005
+  ScaleLambda: [ 0.6, 0.4 ]
+  SimLambda: 0.1
+
+F3BA:
+  BeginAttackEpoch: -1
+  AttackEpoch: [ ]
+  poison_epoch: 2
+  poison_lr: 0.01
+  poison_momentum: 0.9
+  poison_decay: 0.0005
+  ScaleLambda: [ 0.8, 0.2 ]
+  SimLambda: 0.3
+
+
+ORIDBA:
+  BeginAttackEpoch: 200
+  AttackEpoch: [ ]
+  poison_epoch: 6
+  poison_lr: 0.05
+  ScaleLambea: [ 1, 0 ]
+  poison_momentum: 0.9
+  poison_decay: 0.0005
+  SimLambda: 0
+
+Composite:
+  BeginAttackEpoch: -1
+  AttackEpoch: []
+#  AttackEpoch: [
+#                50, 51, 52, 53, 54, 55, 56, 57, 58, 59,
+#                60, 61, 62, 63, 64, 65, 66, 67, 68, 69,
+#                70, 71, 72, 73, 74, 75, 76, 77, 78, 79
+#                ]
+  poison_epoch: 2
+  poison_lr: 0.01
+  poison_momentum: 0.9
+  poison_decay: 0.0005
+  ScaleLambda: [ 0.4, 0.4, 0.2, 0.2 ]
+  SimLambda: 0.3
+  PoisonProportionA: 30
+  PoisonProportionB: 30
+  TrainType: adaptive # non_adaptive、adaptive
+  TriggerType: same # no_same、same
+
+#  BackdoorLabelA: 0
+#  BackdoorLabelB: 0
+#
+
+
+
+
+MinMax:
+  BeginAttackEpoch: -1
+  AttackEpoch: [ ]
+MinSum:
+  BeginAttackEpoch: -1
+  AttackEpoch: [ ]
+Fang:
+  pattern: full # partial、full
+  BeginAttackEpoch: -1
+  AttackEpoch: [ ]
+LIE:
+  pattern: full # partial、full
+  BeginAttackEpoch: -1
+  AttackEpoch: [ ]
+SignFlipping:
+  BeginAttackEpoch: -1
+  AttackEpoch: [ ]
+AdditiveNoise:
+  BeginAttackEpoch: -1
+  AttackEpoch: [ ]
+
+Save:
+  IsSave: False  # 存储的总开关，默认存储结果
+  RootPath: ./logs/
+  SavePath: Result-
+  AccSaveName: Evaluate-Acc.csv
+
+  IsSaveModel: False # 定制化存储，IsSave启动后生效
+  IsSaveTrigger: True # 定制化存储，IsSave启动后生效
+  RootInfoPath: ./infors/
