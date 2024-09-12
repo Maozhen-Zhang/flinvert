@@ -94,13 +94,15 @@ class MalClientCerp(MalClient):
                 for batch_idx, batch in enumerate(tq):
                     tq.update(1)
                     data, target = batch[0].to(device), batch[1].to(device)
-                    if data.shape[0] == 1:
-                         continue
+
                     if poison_method is not None:
                         index = np.where(target.cpu() != cfg.target_label)[0]
                         data_ori, target_ori = data[index], target[index]
                         poison_images, poison_targets = poison_method(cfg, batch, trigger, IsTest=False)
                         data, target = poison_images.to(torch.float32).to(device), poison_targets.to(device)
+                    if data.shape[0] < 1:
+                         continue
+                    print(data.shape)
                     poison_optimizer.zero_grad()
                     output = model(data)
                     class_loss = criterion(output, target)
