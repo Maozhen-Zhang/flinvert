@@ -8,5 +8,3 @@ python main.py --config conf_pretrain --attack flinvert --wandb
 python main.py --config conf --attack flinvert --wandb --project fl-att-client-100
 
 ``` 
-# flinvert
->>>>>>> 685983c0c3ae2e5c615601fb45ab652c6000cc1e
