@@ -23,7 +23,6 @@ weight_decay: 0.0005
 
 agglr: 0.5
 heterogenuity: True
-
 dirichlet_alpha: 0.9
 
 ### backdoor
@@ -34,7 +33,7 @@ local_epoch_mal: 2
 
 ### wandb
 wandb: False
-project: fl-att-client-1000
+project: fl-att-client-1000-result-compare
 name: ""
 
 ### save
@@ -51,11 +50,12 @@ epsilon: 8 / 255.0
 
 inject_params: True
 inject_epoch: [1900, 2100]
-threshold: 0.00005
+threshold: 0.0005
 delta: 0.0001
 
 ### normclip
 normclip_ratio: 0.2
+clip: False
 
 
 ### neurotoxin
@@ -75,7 +75,7 @@ coordinate_dba: [
   [ [ 6,6 ],[ 6,7 ],[ 6,8 ] ],  [ [ 6,12 ],[ 6,13 ],[ 6,14 ] ],
 ]
 
-
+mal_num: 200
 mal_id: [
   0, 1, 2, 3,
   4, 5, 6, 7, 8, 9,

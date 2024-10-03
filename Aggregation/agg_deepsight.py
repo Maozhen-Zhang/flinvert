@@ -79,7 +79,7 @@ class AggDeepSight(FedAvg):
         neups = np.array([(neup/sC_nn2).cpu().numpy() for neup in neups])
         print("n_exceeds:{}".format(n_exceeds))
 
-        rand_input = torch.randn((256, 3, cfg.img_size, cfg.img_size)).to(self.cfg.device)
+        rand_input = torch.randn((128, 3, cfg.img_size, cfg.img_size)).to(self.cfg.device)
         global_ddif = torch.mean(torch.softmax(global_model(rand_input), dim=1), dim=0)
         tmp_model = copy.deepcopy(global_model)
 

@@ -1,6 +1,7 @@
 
 import warnings
 
+from Terminal.malclientF3BA_ import MalClientF3BA_
 
 # 忽略所有 UserWarning 类型的警告
 warnings.filterwarnings("ignore", category=UserWarning)
@@ -28,7 +29,8 @@ from Terminal.malclientFLinvert import MalClientFlinvert
 from Terminal.malclientIBA import MalClientIBA
 from Terminal.server import Server
 from utils.function_backdoor_injection import triggerAggergation, evaluate_trigger, triggerAggergationFlinvert, \
-    get_candidate_params, get_global_grads, get_param_not_important_resnet_from_gradsMean, triggerAggergationF3BA
+    get_candidate_params, get_global_grads, get_param_not_important_resnet_from_gradsMean, triggerAggergationF3BA, \
+    get_global_grads_vgg
 
 
 class FLTrain():
@@ -85,14 +87,20 @@ class FLTrain():
                 "dba": MalClientDBA,
                 "flinvert": MalClientFlinvert,
                 "neurotoxin": MalClientNeurotoXin,
-                "f3ba": MalClientF3BA,
+                # "f3ba": MalClientF3BA,
                 "a3fl": MalClientA3FL,# too slow
                 "iba": MalClientIBA, # sample
                 "cerp": MalClientCerp,
+                "f3ba": MalClientF3BA_,
             }
+            if len(dataset_slices[ID]) == 0:
+                continue
             identity = cfg.attack if ID in cfg.mal_id else "noatt"
             clients[ID] = Clients[identity](cfg, ID, dataset_slices[ID], test_dataset, identity=identity)
             print(f"|---Client {ID} identity is {identity}")
+
+        cfg.mal_id = [id for id in cfg.mal_id if id in clients.keys()]
+
         return clients
 
     def updatelr(self, e):
@@ -111,9 +119,10 @@ class FLTrain():
 
             ### init
             backdoor_params = []
+            norms = {}
             global_grads = None
             self.updatelr(e)
-            choice_id, mal_id = self.server.getChoiceId()
+            choice_id, mal_id = self.server.getChoiceId(self.clients)
 
             # weight_accumulators = {id: self.server.global_model.state_dict() for id in range(cfg.n_client)}
             for i, ID in enumerate(choice_id):
@@ -122,13 +131,21 @@ class FLTrain():
             ### warm up for flinvert
             if e in range(cfg.poison_epoch[0] - 10, cfg.poison_epoch[1]) and cfg.attack == 'flinvert' and cfg.inject_params:
                 param_no_change = get_candidate_params(cfg, self.server.global_model, global_weight_records)
-
+                # print(f"这里的参数数量是{len(param_no_change)}") if param_no_change is not None else ""
 
             datanums = 0
             for i, ID in enumerate(choice_id):
                 if ID in mal_id and cfg.inject_params and e in range(cfg.poison_epoch[0], cfg.poison_epoch[1]) and cfg.attack == 'flinvert' and e in range(cfg.inject_epoch[0], cfg.inject_epoch[1]):
-                    global_grads, datanum = get_global_grads(global_grads, self.server.global_model,
+
+
+                    if cfg.model == 'resnet18':
+                        global_grads, datanum = get_global_grads(global_grads, self.server.global_model,
                                                              self.clients[ID].train_dataset)
+                    elif cfg.model == 'vgg11':
+                        global_grads, datanum = get_global_grads_vgg(global_grads, self.server.global_model,
+                                                             self.clients[ID].train_dataset)
+                    else:
+                        raise ValueError(f"Model {cfg.model} is not supported")
                     datanums += datanum
 
             if e in range(cfg.poison_epoch[0], cfg.poison_epoch[1]) and cfg.attack == 'flinvert' and cfg.inject_params and e in range(cfg.inject_epoch[0], cfg.inject_epoch[1]):
@@ -142,68 +159,17 @@ class FLTrain():
 
                     for i, ID in enumerate(choice_id):
                         if ID in mal_id and len(backdoor_params) > 0:
+                            print(f" params inject")
                             client = self.clients[ID]
                             train_model = Helper.copyParams(models[i], weight_accumulators[ID])
                             client.load_model(train_model)
                             client.backdoor_inject(backdoor_params, cfg.delta)
                             client.uploadWeight(weight_accumulators)
 
-            for i, ID in enumerate(choice_id):
-                client = self.clients[ID]
-                client.updateEpoch(e)
-
-                train_model = Helper.copyParams(models[i], weight_accumulators[ID])
-                client.load_model(train_model)
-                client.local_train(self.cfg)
-                client.uploadWeight(weight_accumulators)
-            self.server.aggregate_weight(weight_accumulators, choice_id)
-
-            self.metric(e)
-            self.metricbackdoor(e, self.clients, choice_id, mal_id) if cfg.attack != "noatt" else ""
-            self.saveinfo(e)
-            print(" ")
-
-    def train_model_(self):
-        models = [init_model(self.cfg) for _ in range(self.cfg.sample)]
-        global_weight_records = []
-
-        for e in range(self.cfg.start_epoch, self.cfg.end_epoch):
-
-            ### init
-            backdoor_params = []
-            global_grads = None
-            self.updatelr(e)
-            choice_id, mal_id = self.server.getChoiceId()
-            weight_accumulators = {id: self.server.global_model.state_dict() for id in choice_id}
-
-            ### warm up for flinvert
-            if e in range(cfg.poison_epoch[0] - 10, cfg.poison_epoch[1]) and cfg.attack == 'flinvert' and cfg.inject_params:
-                param_no_change = get_candidate_params(cfg, self.server.global_model, global_weight_records)
-
-
-            datanums = 0
-            for i, ID in enumerate(choice_id):
-                if ID in mal_id and cfg.inject_params and e in range(cfg.poison_epoch[0], cfg.poison_epoch[1]) and cfg.attack == 'flinvert':
-                    global_grads, datanum = get_global_grads(global_grads, self.server.global_model,
-                                                             self.clients[ID].train_dataset)
-                    datanums += datanum
-
-            if e in range(cfg.poison_epoch[0], cfg.poison_epoch[1]) and cfg.attack == 'flinvert' and cfg.inject_params:
-                if param_no_change is not None and global_grads is not None:
-                    param_not_important_global = get_param_not_important_resnet_from_gradsMean(global_grads,
-                                                                                               datanums)
-                    for idx in range(len(param_not_important_global)):
-                        backdoor_params.append(
-                            np.logical_and(param_no_change[idx], param_not_important_global[idx]))
-                    backdoor_params = np.array(backdoor_params, dtype=object)
-
-                    for i, ID in enumerate(choice_id):
-                        if ID in mal_id and len(backdoor_params) > 0:
-                            client = self.clients[ID]
-                            train_model = Helper.copyParams(models[i], weight_accumulators[ID])
-                            client.load_model(train_model)
-                            client.backdoor_inject(backdoor_params, cfg.delta)
-                            client.uploadWeight(weight_accumulators)
+            if cfg.clip == True:
+                for i, ID in enumerate(choice_id):
+                    self.server.normclip.run(self.cfg, self.server.global_model.state_dict(), weight_accumulators, ID)
+                    norm = self.server.normclip.get_l2_norm(cfg, self.server.global_model.state_dict(), weight_accumulators, ID)
 
             for i, ID in enumerate(choice_id):
                 client = self.clients[ID]
@@ -243,7 +209,7 @@ class FLTrain():
             inject_method = triggerInjection
             self.gobal_pattern, self.global_mask = trigger[0], trigger[1]
 
-        elif cfg.attack == "f3ba":
+        elif cfg.attack == "f3ba" or cfg.attack == "f3ba_":
             trigger = triggerAggergationF3BA(self.cfg, clients)
             from utils.function_backdoor_injection import triggerInjection
             inject_method = triggerInjection
@@ -291,9 +257,14 @@ class FLTrain():
                 cfg.initial_lr = 0.01
                 cfg.final_lr = 0.001
                 cfg.total_iterations = 200
+                # cfg.initial_lr = 0.1
+                # cfg.final_lr = 0.01
+                # cfg.total_iterations = 200
                 cfg.decay_rate = (cfg.final_lr / cfg.initial_lr) ** (1 / cfg.total_iterations)
-            cfg.lr_trigger = cfg.initial_lr * (cfg.decay_rate ** (e - cfg.start_epoch))
-
+            if cfg.model == 'resnet18':
+                cfg.lr_trigger = cfg.initial_lr * (cfg.decay_rate ** (e - cfg.start_epoch))
+            else:
+                cfg.lr_trigger = cfg.initial_lr * (cfg.decay_rate ** (e - cfg.start_epoch))
         else:
             raise ValueError(f"Attack {cfg.attack} is not supported")
         asr, loss_asr, correct_asr, datasize_asr = Helper.metric(self.cfg, model, test_dataloder,
@@ -309,7 +280,9 @@ class FLTrain():
             "global_pattern": self.gobal_pattern if cfg.attack != "noatt" and cfg.attack != 'iba' else None,
             "global_mask": self.global_mask if cfg.attack != "noatt" and cfg.attack != 'iba' else None,
         }
-        if (e+1) % 100 == 0:
+        if (e+1) % 200 == 0 and cfg.attack == 'noatt' and cfg.defense == 'fedavg':
+            Helper.saveinfo(cfg, save_dict, e)
+        elif e == cfg.epoch-1:
             Helper.saveinfo(cfg, save_dict, e)
 
 if __name__ == '__main__':

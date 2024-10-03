@@ -3,6 +3,7 @@ from operator import add
 
 import numpy as np
 import torch
+from torch import nn
 
 from Functions.helper import Helper
 
@@ -24,6 +25,9 @@ def triggerAggergationF3BA(cfg, clients):
     pattern = torch.zeros(cfg.image_shape).to(cfg.device)
     mask = torch.zeros(cfg.image_shape).to(cfg.device)
     for i in cfg.mal_id:
+        clients[i].pattern = clients[i].pattern.to(cfg.device)
+        clients[i].mask = clients[i].mask.to(cfg.device)
+
         pattern = pattern + clients[i].pattern
         mask = mask + clients[i].mask
     pattern = pattern / len(cfg.mal_id)
@@ -51,21 +55,16 @@ def evaluate_trigger(cfg, model, clients, poison_method=None):
     acc_list, loss_list = [], []
     for ID in cfg.mal_id:
         client = clients[ID]
+
         acc, loss, correct, datasize = Helper.metric(cfg, model, client.dataloader,
                                                      IsBackdoor=True,
                                                      poison_method=poison_method,
                                                      trigger=[client.pattern, client.mask])
         loss_list.append(loss)
         acc_list.append(acc)
-    if len(cfg.mal_id) == 4:
+    if len(cfg.mal_id) >= 4:
         indices = sorted(range(len(acc_list)), key=lambda i: acc_list[i], reverse=True)[:1]
-    elif len(cfg.mal_id) == 10:
-        indices = sorted(range(len(acc_list)), key=lambda i: acc_list[i], reverse=True)[:1]
-    elif len(cfg.mal_id) == 20:
-        indices = sorted(range(len(acc_list)), key=lambda i: acc_list[i], reverse=True)[:1]
-    elif len(cfg.mal_id) == 40:
-        indices = sorted(range(len(acc_list)), key=lambda i: acc_list[i], reverse=True)[:1]
-    elif len(cfg.mal_id) == 100:
+    elif len(cfg.mal_id) >= 100 and len(cfg.mal_id) < 200:
         indices = sorted(range(len(acc_list)), key=lambda i: acc_list[i], reverse=True)[:10]
     elif len(cfg.mal_id) >= 200:
         indices = sorted(range(len(acc_list)), key=lambda i: acc_list[i], reverse=True)[:20]
@@ -139,9 +138,10 @@ def triggerInjectionflinvert(cfg, batch, trigger, IsTest=False):
 def triggerAggergationFlinvert(cfg, clients, agg_list):
     pattern = 0
     mask = 0
-    for i in agg_list:
-        pattern = pattern + clients[i].pattern
-        mask = mask + clients[i].mask
+    for i, id in enumerate(cfg.mal_id):
+        if i in agg_list:
+            pattern = pattern + clients[id].pattern
+            mask = mask + clients[id].mask
 
     pattern = pattern / len(agg_list)
     mask = mask / len(agg_list)
@@ -151,7 +151,11 @@ def triggerAggergationFlinvert(cfg, clients, agg_list):
 ### inject params
 def get_candidate_params(cfg, global_model, global_weight_records):
     # handle param of global model
-    params = extract_weights_resnet(global_model)
+    if cfg.model == 'resnet18' or cfg.model == 'cnn':
+        params = extract_weights_resnet(global_model)
+    else:
+        params = extract_weights(global_model)
+
 
     if len(global_weight_records) < 10:
         global_weight_records.append(params)
@@ -161,12 +165,32 @@ def get_candidate_params(cfg, global_model, global_weight_records):
 
     if len(global_weight_records) == 10:
         param_no_change = get_param_no_change(cfg, global_weight_records, cfg.threshold)
+
     elif len(global_weight_records) > 10:
         print("The length of global_weight_records is not enough")
     else:
         param_no_change = None
     return param_no_change
 
+
+def extract_weights(model):
+    params = []
+    for f in model.features:
+        if isinstance(f, nn.Conv2d):
+            p = f.state_dict()
+            weight = p['weight'].cpu().numpy()
+            bias = p['bias'].cpu().numpy()
+            params.append(weight)
+            params.append(bias)
+    for c in model.classifier:
+        if isinstance(c, nn.Linear):
+            p = c.state_dict()
+            weight = p['weight'].cpu().numpy()
+            bias = p['bias'].cpu().numpy()
+            params.append(weight)
+            params.append(bias)
+    params= np.array(params, dtype=object)
+    return params
 
 def extract_weights_resnet(model):
     params = []
@@ -178,20 +202,20 @@ def extract_weights_resnet(model):
     return params
 
 
-def get_param_no_change(cfg, global_weight_records, threshold):
-    # if cfg.arch == "vgg11":
-    #     num_layers = 22
-    # elif utils.arch == "vgg19":
-    #     num_layers = 38
-    # elif utils.arch == "resnet18":
-    #     num_layers = 21
-    # else:
-    #     num_layers = 54
 
-    if cfg.model == "resnet18":
+def get_param_no_change(cfg, global_weight_records, threshold):
+
+    if cfg.model == 'cnn':
+        num_layers = 4
+    elif cfg.model == "vgg11":
+        num_layers = 22
+    elif cfg.model == "vgg19":
+        num_layers = 38
+    elif cfg.model == "resnet18":
         num_layers = 21
     else:
-        raise ValueError("model is not supported")
+        num_layers = 54
+
     params = [[] for _ in range(num_layers)]
     for r in range(len(global_weight_records)):
         # 加载global model
@@ -228,6 +252,32 @@ def get_global_grads(global_grads, model, dataset):
     num = len(dataset)
     return global_grads, num
 
+def get_global_grads_vgg(global_grads, model, dataset):
+    test_loader = torch.utils.data.DataLoader(dataset, batch_size=1, shuffle=False)
+    test_data = iter(test_loader)
+    model.eval()
+    for _ in range(len(dataset)):
+        g = []
+        data, target = next(test_data)
+        data, target = data.cuda(), target.cuda()
+        output = model(data)
+        loss = torch.nn.functional.cross_entropy(output, target, reduction='sum')
+        loss.backward()
+        for f in model.features:
+            if isinstance(f, nn.Conv2d):
+                g.append(f.weight.grad.abs())
+                g.append(f.bias.grad.abs())
+        for c in model.classifier:
+            if isinstance(c, nn.Linear):
+                g.append(c.weight.grad.abs())
+                g.append(c.bias.grad.abs())
+        if global_grads is None:
+            global_grads = g
+        else:
+            global_grads = list(map(add, global_grads, g))
+    num = len(dataset)
+    return global_grads, num
+
 
 def get_param_not_important_resnet_from_gradsMean(global_grads, datanums):
     global_grads[:] = [x / datanums for x in global_grads]
@@ -238,3 +288,5 @@ def get_param_not_important_resnet_from_gradsMean(global_grads, datanums):
         not_important = data < threshold
         param_not_important.append(not_important)
     return param_not_important
+
+
