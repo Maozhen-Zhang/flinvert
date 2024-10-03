@@ -89,7 +89,7 @@ class MalClientCerp(MalClient):
             scheduler = torch.optim.lr_scheduler.MultiStepLR(poison_optimizer,
                                                              milestones=[int(0.2 * 5), int(0.8 * 5)], gamma=0.1)
 
-            for internal_epoch in range(1, 6):
+            for internal_epoch in range(1, 3):
                 tq = tqdm(dataloader, desc=f"Epoch {self.current_epoch} Train", disable=True)
                 for batch_idx, batch in enumerate(tq):
                     tq.update(1)
@@ -102,7 +102,6 @@ class MalClientCerp(MalClient):
                         data, target = poison_images.to(torch.float32).to(device), poison_targets.to(device)
                     if data.shape[0] < 1:
                          continue
-                    print(data.shape)
                     poison_optimizer.zero_grad()
                     output = model(data)
                     class_loss = criterion(output, target)

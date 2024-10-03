@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="PublishConfigData" autoUpload="On explicit save action" serverName="zmz@IPV4" remoteFilesAllowedToDisappearOnAutoupload="false" confirmBeforeUploading="false" autoUploadExternalChanges="true">
+  <component name="PublishConfigData" autoUpload="On explicit save action" serverName="zmz" remoteFilesAllowedToDisappearOnAutoupload="false" confirmBeforeUploading="false" autoUploadExternalChanges="true">
     <option name="confirmBeforeUploading" value="false" />
     <serverData>
-      <paths name="zmz@IPV4">
+      <paths name="zmz">
         <serverdata>
           <mappings>
             <mapping deploy="experiments/FLFrame-flinvert" local="$PROJECT_DIR$" web="/" />

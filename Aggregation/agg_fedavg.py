@@ -27,7 +27,7 @@ class FedAvg:
         if pts is None:
             pts = {i: 1.0 / len(chosen_ids) for i in chosen_ids}
         else:
-            pts = {id: pts[i] for i, id in enumerate(chosen_ids)}
+            pts = {id: pts[i]/ len(chosen_ids) for i, id in enumerate(chosen_ids)}
 
         # init averaged_grad
         averaged_grad = OrderedDict()

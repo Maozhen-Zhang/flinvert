@@ -136,7 +136,7 @@ class TinyImagenetFederatedTask():
                 transforms.RandomCrop(64, padding=4),
                 transforms.RandomHorizontalFlip(),
                 transforms.ToTensor(),
-                self.normalize
+                # self.normalize
             ])
         else:
             transform_train = transforms.Compose([

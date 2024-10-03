@@ -1,5 +1,6 @@
 import copy
 import math
+import os
 import random
 import torch
 import torch.nn
@@ -104,8 +105,22 @@ def get_dataset(dataset='', root_path='', IsNormalize=False):
                                          transform=transform_test)
     elif dataset == 'tiny-imagenet':
         path = root_path + '/tiny-imagenet-200'
-        imagenettask = TinyImagenetFederatedTask()
-        train_dataset, test_dataset = imagenettask.load_data()
+        data_transforms = {
+            'train': transforms.Compose([
+                transforms.RandomHorizontalFlip(),
+                transforms.ToTensor(),
+            ]),
+            'val': transforms.Compose([
+                transforms.ToTensor(),
+            ]),
+        }
+
+        image_datasets = {x: datasets.ImageFolder(os.path.join(path, x),
+                                                  data_transforms[x])
+                          for x in ['train', 'val']}
+        train_dataset = image_datasets['train']
+        test_dataset = image_datasets['val']
+
     else:
         print("Error!!The name is Error!")
         assert (1 == 2)
