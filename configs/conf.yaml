@@ -9,38 +9,39 @@ normalize: False
 ### fl setting
 defense: fedavg
 attack: noatt
-n_client: 1000
+n_client: 20
 sample: 10
 
 ### train setting
 local_epoch: 2
-epoch: 1900
+epoch: 400
 batch_size: 64
-lr: 0.1
+lr: 0.01
 momentum: 0.9
 weight_decay: 0.0005
+
 
 agglr: 0.5
 heterogenuity: True
 dirichlet_alpha: 0.9
 
 ### backdoor
-poison_epoch: [0,3000]
+poison_epoch: [0,1000]
 target_label: 0
 poison_ratio: 0.078125
 local_epoch_mal: 2
 
 ### wandb
 wandb: False
-project: flinvert
+project: fl-att-client-20-compare
 name: ""
 
 ### save
 load_checkpoint: False
 load_epoch: 1899
 
-save_checkpoint: True
-checkpoint_path: 0.1-0.5-0.5-1000-200-epoch_1899.pth
+save_checkpoint: False
+checkpoint_path: 0.01-0.5-0.5-1000-200-epoch_1899.pth
 
 ### flinvert
 epoch_trigger: 2
@@ -54,7 +55,7 @@ inject_epoch: [0, 200]
 
 ### normclip
 normclip_ratio: 0.2
-clip: False
+
 
 ### neurotoxin
 mask_ratio_neurotoxin: 0.95
@@ -73,7 +74,7 @@ coordinate_dba: [
   [ [ 6,6 ],[ 6,7 ],[ 6,8 ] ],  [ [ 6,12 ],[ 6,13 ],[ 6,14 ] ],
 ]
 
-mal_num: 4
+
 mal_id: [
   0, 1, 2, 3,
 #  4, 5, 6, 7, 8, 9,

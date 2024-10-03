@@ -16,19 +16,10 @@ def parse_args():
     desc = "Pytorch Adversarial Attack"
     parser = argparse.ArgumentParser(description=desc)
     parser.add_argument('--config', '-c', type=str, default='train_aisl')
-    parser.add_argument('--dataset', type=str)
-    parser.add_argument('--model', type=str)
+    # parser.add_argument('--dataset','-d', type=str, default='CIFAR10')
+    # parser.add_argument('--model','-m', type=str, default='resnet18')
     parser.add_argument('--attack', '-a', type=str)
     parser.add_argument('--defense', '-d', type=str)
-    parser.add_argument('--n_client', type=int)
-    parser.add_argument('--epoch', type=int)
-
-    #mal client num
-    parser.add_argument('--mal_num', '-mn', type=int)
-
-    # distribution setting
-    parser.add_argument('--dirichlet_alpha', '-da', type=float)
-
 
     # normclip_ratio setting
     parser.add_argument('--normclip_ratio', '-nr', type=float)
@@ -66,22 +57,15 @@ def get_configs(args):
     if configs.attack == "noatt":
         configs.poison_epoch = [-1, -1]
 
-    if configs.dataset == "mnist":
-        configs.img_size = 28
-        configs.classes = 10
-    elif configs.dataset == "cifar10":
+    if configs.dataset == "cifar10":
         configs.img_size = 32
         configs.classes = 10
     elif configs.dataset == "imagenet10":
         configs.img_size = 224
         configs.classes = 10
-    elif configs.dataset == "tiny-imagenet":
-        configs.img_size = 64
-        configs.classes = 200
     else:
         raise ValueError("dataset not found")
 
-    configs.mal_id = [i for i in range(configs.mal_num)]
 
 
     return configs

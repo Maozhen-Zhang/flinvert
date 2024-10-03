@@ -3,13 +3,19 @@ from collections import OrderedDict
 
 import torch
 
-
+from Attacks.att_adaptive import AttAdaptive
+from Attacks.att_additivenoise import AttAdditiveNoise
 from Attacks.att_cba import AttCBA
-
+from Attacks.att_combination import AttComposite
+from Attacks.att_dba_ori import AttOriDBA
+from Attacks.att_f3ba import AttF3BA
+from Attacks.att_fang import AttackFang
+from Attacks.att_lie import AttLie
 from Attacks.att_neurotoxin import AttNeurotoxin
 from Attacks.att_no_attack import NoAtt
 from Attacks.att_no_attack_cdp import NoAttCDP
 from Attacks.att_no_attack_ldp import NoAttLDP
+from Attacks.att_signflipping import AttSignFlipping
 from Attacks.att_dba import AttDBA
 from Functions.log import get_logger
 

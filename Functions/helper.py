@@ -48,20 +48,18 @@ class Helper:
                                                  nrow=7)
                     # torchvision.utils.save_image(torch.cat([data[:7]], dim=0), f"visual/{cfg.attack}-batchid_{batch_id}-backdoor_{IsBackdoor}.png",
                     #                  nrow=7)
-        if datasize == 0:
-            return 0, 0, 0, 0
         loss = total_loss / datasize
         acc = float(correct) / datasize
         return acc, loss, correct, datasize
 
     @staticmethod
     def saveinfo(cfg, save_dict, e):
-        torch.save(save_dict, f"./checkpoints-new/{cfg.model}-{cfg.dataset}-{cfg.attack}-{cfg.defense}-{cfg.n_client}/{cfg.lr}-{cfg.agglr}-{cfg.agglr}-{cfg.n_client}-epoch_{e}.pth")
+        torch.save(save_dict, f"./checkpoints/{cfg.dataset}-{cfg.attack}-{cfg.defense}-{cfg.n_client}/{cfg.lr}-{cfg.agglr}-{cfg.agglr}-{cfg.n_client}-{len(cfg.mal_id)}-epoch_{e}.pth")
 
     @staticmethod
     def load_checkpoint(cfg, model):
         current_defense = cfg.defense
-        save_dict = torch.load(f'./checkpoints-new/{cfg.model}-{cfg.dataset}-noatt-fedavg-{cfg.n_client}/{cfg.checkpoint_path}')
+        save_dict = torch.load(f'./checkpoints/{cfg.dataset}-noatt-fedavg-{cfg.n_client}/{cfg.checkpoint_path}')
         print(f"|--- Load model from {cfg.checkpoint_path}")
         model.load_state_dict(save_dict['global_weight'])
 

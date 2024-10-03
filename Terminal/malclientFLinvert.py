@@ -3,7 +3,7 @@ from operator import add
 import numpy as np
 import torch
 import torchvision
-from torch import optim, nn
+from torch import optim
 from tqdm import tqdm
 
 from Terminal.malclient import MalClient
@@ -176,56 +176,20 @@ class MalClientFlinvert(MalClient):
 
 
     def backdoor_inject(self, backdoor_params, delta=0.1):
-        if self.cfg.model == "vgg11":
-            layers = ['features.0', 'features.4', 'features.8', 'features.11', 'features.15', 'features.18',
-                      'features.22', 'features.25', 'classifier.0', 'classifier.2', 'classifier.4']
-        else:
-            layers = ['features.0', 'features.3', 'features.7', 'features.10', 'features.14', 'features.17',
-                      'features.20', 'features.23', 'features.27', 'features.30', 'features.33', 'features.36',
-                      'features.40', 'features.43', 'features.46', 'features.49', 'classifier.0', 'classifier.2',
-                      'classifier.4']
-
         model = self.local_model
         trigger = self.pattern
         images = [self.train_dataset[i][0] for i in range(len(self.train_dataset))]
 
-        if self.cfg.model == 'resnet18':
-            orig_params = []
-            for p in self.local_model.parameters():
-                if len(p.shape) != 1:
-                    orig_params.append(p)
-        elif self.cfg.model == 'vgg11':
-            orig_params = []
-            for f in model.features:
-                if isinstance(f, nn.Conv2d):
-                    orig_params.append(f.weight)
-                    orig_params.append(f.bias)
-            for c in model.classifier:
-                if isinstance(c, nn.Linear):
-                    orig_params.append(c.weight)
-                    orig_params.append(c.bias)
-        else:
-            raise ValueError('Model not supported')
-
+        orig_params = []
+        for p in self.local_model.parameters():
+            if len(p.shape) != 1:
+                orig_params.append(p)
         for _ in range(10):
-            backdoor_modification_sign = self.get_backdoor_modification_sign(model, images, trigger)
+            backdoor_modification_sign = self.get_backdoor_modification_sign_resnet(model, images, trigger)
             params = []
-            if self.cfg.model == 'resnet18':
-                for p in model.parameters():
-                    if len(p.shape) != 1:
-                        params.append(p)
-            elif self.cfg.model == 'vgg11':
-                params = []
-                for f in model.features:
-                    if isinstance(f, nn.Conv2d):
-                        params.append(f.weight)
-                        params.append(f.bias)
-                for c in model.classifier:
-                    if isinstance(c, nn.Linear):
-                        params.append(c.weight)
-                        params.append(c.bias)
-            else:
-                raise ValueError('Model not supported')
+            for p in model.parameters():
+                if len(p.shape) != 1:
+                    params.append(p)
             backdoor_done = []
             for i in range(len(params)):
                 change = backdoor_modification_sign[i] * delta
@@ -238,22 +202,12 @@ class MalClientFlinvert(MalClient):
             model_keys = model.state_dict().keys()
             count = 0
             for item in model_keys:
-                if self.cfg.model == 'cnn':
-                    if ('conv' in item or 'shortcut.0' in item or 'linear.weight' in item) and 'weight' in item:
-                        model_dict[item] = torch.tensor(backdoor_done[count])
-                        count += 1
-                elif self.cfg.model == 'resnet18':
-                    if 'conv' in item or 'shortcut.0' in item or 'linear.weight' in item:
-                        model_dict[item] = torch.tensor(backdoor_done[count])
-                        count += 1
-                elif self.cfg.model == 'vgg11':
-                    for i in range(len(layers)):
-                        model_dict[layers[i] + '.weight'] = torch.tensor(backdoor_done[2 * i])
-                        model_dict[layers[i] + '.bias'] = torch.tensor(backdoor_done[2 * i + 1])
-
+                if 'conv' in item or 'shortcut.0' in item or 'linear.weight' in item:
+                    model_dict[item] = torch.tensor(backdoor_done[count])
+                    count += 1
             model.load_state_dict(model_dict)
 
-    def get_backdoor_modification_sign(self, model, images, trigger):
+    def get_backdoor_modification_sign_resnet(self, model, images, trigger):
         grads = None
         num_images = 100 if len(images) > 100 else len(images)
         for index in range(num_images):
@@ -263,21 +217,9 @@ class MalClientFlinvert(MalClient):
             g = []
             loss = torch.nn.functional.cross_entropy(outputs, torch.tensor([self.cfg.target_label]).to(self.cfg.device), reduction='sum')
             loss.backward()
-            if self.cfg.model == 'resnet18':
-                for param in model.parameters():
-                    if len(param.shape) != 1:
-                        g.append(param.grad)
-            elif self.cfg.model == 'vgg11':
-                for f in model.features:
-                    if isinstance(f, nn.Conv2d):
-                        g.append(f.weight.grad)
-                        g.append(f.bias.grad)
-                for c in model.classifier:
-                    if isinstance(c, nn.Linear):
-                        g.append(c.weight.grad)
-                        g.append(c.bias.grad)
-            else:
-                raise ValueError('Model not supported')
+            for param in model.parameters():
+                if len(param.shape) != 1:
+                    g.append(param.grad)
             if grads is None:
                 grads = g
             else:

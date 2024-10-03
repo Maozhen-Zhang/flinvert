@@ -2,6 +2,8 @@ import statistics
 
 import torch
 
+from Attacks.attrobust import AttRobust
+
 
 class NoAtt():
     def __init__(self, conf):
