@@ -1,7 +1,6 @@
 
 import warnings
 
-from Terminal.malclientF3BA_ import MalClientF3BA_
 
 # 忽略所有 UserWarning 类型的警告
 warnings.filterwarnings("ignore", category=UserWarning)
@@ -87,11 +86,10 @@ class FLTrain():
                 "dba": MalClientDBA,
                 "flinvert": MalClientFlinvert,
                 "neurotoxin": MalClientNeurotoXin,
-                # "f3ba": MalClientF3BA,
                 "a3fl": MalClientA3FL,# too slow
                 "iba": MalClientIBA, # sample
                 "cerp": MalClientCerp,
-                "f3ba": MalClientF3BA_,
+                "f3ba": MalClientF3BA,
             }
             if len(dataset_slices[ID]) == 0:
                 continue
@@ -122,7 +120,7 @@ class FLTrain():
             norms = {}
             global_grads = None
             self.updatelr(e)
-            choice_id, mal_id = self.server.getChoiceId(self.clients)
+            choice_id, mal_id = self.server.getChoiceId()
 
             # weight_accumulators = {id: self.server.global_model.state_dict() for id in range(cfg.n_client)}
             for i, ID in enumerate(choice_id):

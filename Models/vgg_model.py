@@ -31,6 +31,19 @@ class VGG(nn.Module):
         output = F.log_softmax(out, dim=1)
         return output
 
+    # 新增方法，返回第一卷积层后的激活值
+    def first_activations(self, x):
+        # 提取特征中的前几层
+        first_conv = self.features[0]  # 第1个卷积层
+        first_bn = self.features[1]  # 第1个批归一化层
+        first_relu = self.features[2]  # 第1个ReLU激活层
+
+        # 计算经过第一卷积层、归一化层、ReLU激活后的输出
+        x = first_conv(x)
+        x = first_bn(x)
+        x = first_relu(x)
+        return x
+
     def _make_layers(self, cfg):
         layers = []
         in_channels = self.in_channels
