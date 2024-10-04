@@ -208,11 +208,10 @@ class MalClientF3BA_(MalClient):
 
         raw_weights = copy.deepcopy(model.state_dict())
         # self.set_handcrafted_filters2(model, candidate_weights, "conv1.weight")
-        if isinstance(model, alex_cifar10):
-            self.set_handcrafted_filters2(model, candidate_weights, "features.0.weight")
-        else:
+        if isinstance(model, ResNet):
             self.set_handcrafted_filters2(model, candidate_weights, "conv1.weight")  # 对conv1.weight层进行flip的参数注入
-
+        else:
+            self.set_handcrafted_filters2(model, candidate_weights, "features.0.weight")
 
 
         for epoch in range(2):
@@ -236,10 +235,10 @@ class MalClientF3BA_(MalClient):
                 mal_labels[:batch_size].fill_(self.cfg.target_label)
 
                 # self.set_handcrafted_filters2(model, candidate_weights, "conv1.weight")
-                if isinstance(model, alex_cifar10):
-                    self.set_handcrafted_filters2(model, candidate_weights, "features.0.weight")
-                else:
+                if isinstance(model, ResNet):
                     self.set_handcrafted_filters2(model, candidate_weights, "conv1.weight")  # 对conv1.weight层进行flip的参数注入
+                else:
+                    self.set_handcrafted_filters2(model, candidate_weights, "features.0.weight")
 
                 if i == 0:
                     torchvision.utils.save_image(mal_imgs,"./visual/f3ba/triggers/mal_imgs.png")
@@ -272,6 +271,7 @@ class MalClientF3BA_(MalClient):
         torch.cuda.empty_cache()
 
     def set_handcrafted_filters2(self, model: Model, candidate_weights, layer_name):
+        print(candidate_weights.keys())
         conv_weights = candidate_weights[layer_name]
         # print("check candidate:",int(torch.sum(conv_weights)))
         model_weights = model.state_dict()

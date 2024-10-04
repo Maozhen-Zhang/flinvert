@@ -265,6 +265,7 @@ class FLTrain():
                 cfg.lr_trigger = cfg.initial_lr * (cfg.decay_rate ** (e - cfg.start_epoch))
             else:
                 cfg.lr_trigger = cfg.initial_lr * (cfg.decay_rate ** (e - cfg.start_epoch))
+
         else:
             raise ValueError(f"Attack {cfg.attack} is not supported")
         asr, loss_asr, correct_asr, datasize_asr = Helper.metric(self.cfg, model, test_dataloder,

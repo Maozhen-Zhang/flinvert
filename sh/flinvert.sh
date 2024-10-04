@@ -1,16 +1,38 @@
 
+# vgg11 1000 client
+python main.py --config conf_earlystop --model vgg11 --n_client 1000 --defense fedavg --attack dba --dataset cifar10 --wandb
+python main.py --config conf_earlystop --model vgg11 --n_client 1000 --defense fedavg --attack neurotoxin --dataset cifar10 --wandb
+python main.py --config conf_earlystop --model vgg11 --n_client 1000 --defense fedavg --attack cerp --dataset cifar10 --wandb
+python main.py --config conf_earlystop --model vgg11 --n_client 1000 --defense fedavg --attack f3ba --dataset cifar10 --wandb
+python main.py --config conf_earlystop --model vgg11 --n_client 1000 --defense fedavg --attack iba --dataset cifar10 --wandb
+python main.py --config conf_earlystop --model vgg11 --n_client 1000 --defense fedavg --attack flinvert --dataset cifar10 --wandb
+python main.py --config conf_earlystop --model vgg11 --n_client 1000 --defense fedavg --attack flinvert --inject_params --dataset cifar10 --wandb
 
-python main.py --config conf --n_client 1000 --defense fedavg --attack noatt --model resnet18 --dataset cifar10  --wandb
-cpython main.py --config conf --n_client 1000 --defense fedavg --attack noatt --model resnet18  --dataset tiny-imagenet --wandb
+python main.py --config conf_earlystop --model vgg11 --n_client 1000 --defense deepsight --attack dba --dataset cifar10 --wandb
+python main.py --config conf_earlystop --model vgg11 --n_client 1000 --defense deepsight --attack neurotoxin --dataset cifar10 --wandb
+python main.py --config conf_earlystop --model vgg11 --n_client 1000 --defense deepsight --attack cerp --dataset cifar10 --wandb
+python main.py --config conf_earlystop --model vgg11 --n_client 1000 --defense deepsight --attack f3ba --dataset cifar10 --wandb
+python main.py --config conf_earlystop --model vgg11 --n_client 1000 --defense deepsight --attack iba --dataset cifar10 --wandb
+python main.py --config conf_earlystop --model vgg11 --n_client 1000 --defense deepsight --attack flinvert --dataset cifar10 --wandb
 
-# TODO 修改为20 client 添加 clients 1000
-# TODO 修改为20 client 添加 clients 1000
-#python main.py --config conf --n_client 20 --epoch 400 --defense fedavg --attack noatt --model resnet18 --dataset cifar10  --wandb
-#python main.py --config conf --n_client 20 --epoch 400 --defense fedavg --attack noatt --model vgg11 --dataset cifar10 --wandb
-#python main.py --config conf --n_client 20 --epoch 400 --defense fedavg --attack noatt --model vgg11  --dataset tiny-imagenet --wandb
 
-"""
-  f3ba
-"""
-# 1000 clients
-python main.py --config conf_pretrain --n_client 1000 --epoch 2500 --defense fedavg --attack f3ba --model resnet18 --dataset cifar10 --wandb
+python main.py --config conf_earlystop --model vgg11 --n_client 1000 --defense foolsgold --attack dba --dataset cifar10 --wandb
+python main.py --config conf_earlystop --model vgg11 --n_client 1000 --defense foolsgold --attack neurotoxin --dataset cifar10 --wandb
+python main.py --config conf_earlystop --model vgg11 --n_client 1000 --defense foolsgold --attack cerp --dataset cifar10 --wandb
+python main.py --config conf_earlystop --model vgg11 --n_client 1000 --defense foolsgold --attack f3ba --dataset cifar10 --wandb
+python main.py --config conf_earlystop --model vgg11 --n_client 1000 --defense foolsgold --attack iba --dataset cifar10 --wandb
+python main.py --config conf_earlystop --model vgg11 --n_client 1000 --defense deepsight --attack flinvert --dataset cifar10 --wandb
+
+python main.py --config conf_earlystop --model vgg11 --n_client 1000 --defense mkrum --attack dba --dataset cifar10 --wandb
+python main.py --config conf_earlystop --model vgg11 --n_client 1000 --defense mkrum --attack neurotoxin --dataset cifar10 --wandb
+python main.py --config conf_earlystop --model vgg11 --n_client 1000 --defense mkrum --attack cerp --dataset cifar10 --wandb
+python main.py --config conf_earlystop --model vgg11 --n_client 1000 --defense mkrum --attack f3ba --dataset cifar10 --wandb
+python main.py --config conf_earlystop --model vgg11 --n_client 1000 --defense mkrum --attack iba --dataset cifar10 --wandb
+python main.py --config conf_earlystop --model vgg11 --n_client 1000 --defense deepsight --attack flinvert --dataset cifar10 --wandb
+
+python main.py --config conf_earlystop --model vgg11 --n_client 1000 --defense rlr --attack dba --dataset cifar10 --wandb
+python main.py --config conf_earlystop --model vgg11 --n_client 1000 --defense rlr --attack neurotoxin --dataset cifar10 --wandb
+python main.py --config conf_earlystop --model vgg11 --n_client 1000 --defense rlr --attack cerp --dataset cifar10 --wandb
+python main.py --config conf_earlystop --model vgg11 --n_client 1000 --defense rlr --attack f3ba --dataset cifar10 --wandb
+python main.py --config conf_earlystop --model vgg11 --n_client 1000 --defense rlr --attack iba --dataset cifar10 --wandb
+python main.py --config conf_earlystop --model vgg11 --n_client 1000 --defense deepsight --attack flinvert --dataset cifar10 --wandb

@@ -34,7 +34,7 @@ local_epoch_mal: 2
 
 ### wandb
 wandb: False
-project: flinvert-earystop
+project: flinvert-early-stop
 name: ""
 
 ### save
@@ -42,7 +42,7 @@ load_checkpoint: True
 load_epoch: 1899
 
 save_checkpoint: True
-checkpoint_path: 0.1-0.5-0.5-1000-200-epoch_1899.pth
+checkpoint_path: 0.1-0.5-0.5-1000-epoch_1899.pth
 
 ### flinvert
 epoch_trigger: 2
@@ -55,7 +55,7 @@ delta: 0.0001
 inject_epoch: [1900, 2100]
 ### normclip
 normclip_ratio: 0.2
-
+clip: False
 
 ### neurotoxin
 mask_ratio_neurotoxin: 0.95
@@ -74,7 +74,7 @@ coordinate_dba: [
   [ [ 6,6 ],[ 6,7 ],[ 6,8 ] ],  [ [ 6,12 ],[ 6,13 ],[ 6,14 ] ],
 ]
 
-
+mal_num: 200
 mal_id: [
   0, 1, 2, 3,
   4, 5, 6, 7, 8, 9,

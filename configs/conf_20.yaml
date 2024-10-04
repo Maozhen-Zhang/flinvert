@@ -2,61 +2,60 @@
 device: cuda:0
 ### setting
 dataset: cifar10
-model: resnet18
+model: vgg11
 root_path: /home/zmz/datasets/
 normalize: False
 
 ### fl setting
 defense: fedavg
 attack: noatt
-n_client: 1000
+n_client: 20
 sample: 10
 
 ### train setting
 local_epoch: 2
-epoch: 2500
+epoch: 200
 batch_size: 64
 lr: 0.01
 momentum: 0.9
 weight_decay: 0.0005
-
 
 agglr: 0.5
 heterogenuity: True
 dirichlet_alpha: 0.9
 
 ### backdoor
-poison_epoch: [1900, 2500]
+poison_epoch: [0,3000]
 target_label: 0
 poison_ratio: 0.078125
 local_epoch_mal: 2
 
 ### wandb
 wandb: False
-project: fl-att-client-1000-result-compare
+project: flinvert-train
 name: ""
 
 ### save
-load_checkpoint: True
-load_epoch: 1899
+load_checkpoint: False
+#load_epoch: 1899
+load_epoch: 599
 
 save_checkpoint: True
-checkpoint_path: 0.1-0.5-0.5-1000-200-epoch_1899.pth
-
+#checkpoint_path: 0.1-0.5-0.5-1000-epoch_1899.pth
+checkpoint_path: 0.1-0.5-0.5-1000-epoch_599.pth
 ### flinvert
-epoch_trigger: 2
+epoch_trigger: 5
 lr_trigger: 0.01
 epsilon: 8 / 255.0
 
 inject_params: True
-inject_epoch: [1900, 2100]
 threshold: 0.0005
 delta: 0.0001
+inject_epoch: [0, 200]
 
 ### normclip
 normclip_ratio: 0.2
 clip: False
-
 
 ### neurotoxin
 mask_ratio_neurotoxin: 0.95
