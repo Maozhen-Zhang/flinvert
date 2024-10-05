@@ -266,11 +266,11 @@ class MalClientF3BA(MalClient):
                 # if i == 1:
                 #     print(grads[0][:, x_top:x_bot, y_top:y_bot])
                 # print(grads[0][:, x_top:x_bot, y_top:y_bot])
-                pattern = pattern + grads[0] * 0.001
+                pattern = pattern + grads[0] * 0.0001
 
                 n_channel = pattern.size()[0]
                 for h in range(n_channel):
-                    print(pattern[0, x_top:x_bot, y_top:y_bot].cpu().data)
+                    # print(pattern[0, x_top:x_bot, y_top:y_bot].cpu().data)
                     pattern[h, x_top:x_bot, y_top:y_bot] = torch.clamp(pattern[h, x_top:x_bot, y_top:y_bot], cbots[h],
                                                                        ctops[h], out=None)
 

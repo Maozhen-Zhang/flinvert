@@ -1,4 +1,4 @@
-
+task: pretrain-model-get
 device: cuda:0
 ### setting
 dataset: cifar10

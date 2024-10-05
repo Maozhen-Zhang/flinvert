@@ -15,7 +15,9 @@ def wandb_setting(cfg):
     wandb.init(
         # set the wandb project where this run will be logged
         project=cfg.project,
-        group=cfg.dataset + '-' + cfg.model + '-' + cfg.defense + '-' + str(cfg.n_client),
+        # group=cfg.dataset + '-' + cfg.model + '-' + cfg.defense + '-' + str(cfg.n_client),
+        group=str(cfg.task),
+
         name=wandb_name,
         # track hyperparameters and run metadata
         tags=[cfg.dataset, cfg.model, cfg.defense, cfg.attack],

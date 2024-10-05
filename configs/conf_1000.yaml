@@ -1,8 +1,9 @@
+task: vgg11-clients-1000
 
 device: cuda:0
 ### setting
 dataset: cifar10
-model: vgg11
+model: resnet18
 root_path: /home/zmz/datasets/
 normalize: False
 
