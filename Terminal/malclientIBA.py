@@ -99,41 +99,42 @@ class MalClientIBA(MalClient):
         # atk_optimizer = optim.Adam(atkmodel.parameters(), lr=0.0002)
         unet.train()
         # optimizer.zero_grad()
-        for batch_idx, (data, target) in enumerate(train_loader):
-            bs = data.size(0)
-            data, target = data.to(device), target.to(device)
-            # dataset_size += len(data)
-            # poison_size += len(data)
+        for e in range(3):
+            for batch_idx, (data, target) in enumerate(train_loader):
+                bs = data.size(0)
+                data, target = data.to(device), target.to(device)
+                # dataset_size += len(data)
+                # poison_size += len(data)
 
-            ###############################
-            #### Update the classifier ####
-            ###############################
-            # with torch.no_grad():
-            noise = unet(data) * atk_eps
-            atkdata = torch.clamp(data + noise, 0, 1)
-            atktarget = torch.tensor(cfg.target_label).repeat(atkdata.shape[0]).to(device)
-            if attack_portion < 1.0:
-                atkdata = atkdata[:int(attack_portion * bs)]
-                atktarget = atktarget[:int(attack_portion * bs)]
+                ###############################
+                #### Update the classifier ####
+                ###############################
                 # with torch.no_grad():
-            # atkoutput = wg_clone(atkdata)
-            atkoutput = model(atkdata)
-            criterion = nn.CrossEntropyLoss()
-            loss_p = criterion(atkoutput, atktarget)
-            loss2 = loss_p
-            # import IPython
-            # IPython.embed()
-            atkmodel_optimizer.zero_grad()
-            loss2.backward()
-            atkmodel_optimizer.step()
-            if batch_idx == 0:
-                if cfg.normalize:
-                    data[:7] = tensor2Denormalize(data[:7], DEVICE=cfg.device, dataset=cfg.dataset)
-                    atkdata[:7] = tensor2Denormalize(atkdata[:7], DEVICE=cfg.device, dataset=cfg.dataset)
-                torchvision.utils.save_image(
-                    torch.cat([data[:7], atkdata[:7], data[:7] - atkdata[:7], (data[:7] - atkdata[:7]) * 10,
-                               (data[:7] - atkdata[:7]) * 100], dim=0),
-                    f"visual/iba/triggers/trigger.png", nrow=7)
+                noise = unet(data) * atk_eps
+                atkdata = torch.clamp(data + noise, 0, 1)
+                atktarget = torch.tensor(cfg.target_label).repeat(atkdata.shape[0]).to(device)
+                if attack_portion < 1.0:
+                    atkdata = atkdata[:int(attack_portion * bs)]
+                    atktarget = atktarget[:int(attack_portion * bs)]
+                    # with torch.no_grad():
+                # atkoutput = wg_clone(atkdata)
+                atkoutput = model(atkdata)
+                criterion = nn.CrossEntropyLoss()
+                loss_p = criterion(atkoutput, atktarget)
+                loss2 = loss_p
+                # import IPython
+                # IPython.embed()
+                atkmodel_optimizer.zero_grad()
+                loss2.backward()
+                atkmodel_optimizer.step()
+                if batch_idx == 0:
+                    if cfg.normalize:
+                        data[:7] = tensor2Denormalize(data[:7], DEVICE=cfg.device, dataset=cfg.dataset)
+                        atkdata[:7] = tensor2Denormalize(atkdata[:7], DEVICE=cfg.device, dataset=cfg.dataset)
+                    torchvision.utils.save_image(
+                        torch.cat([data[:7], atkdata[:7], data[:7] - atkdata[:7], (data[:7] - atkdata[:7]) * 10,
+                                   (data[:7] - atkdata[:7]) * 100], dim=0),
+                        f"visual/iba/triggers/trigger.png", nrow=7)
 
     def ibaSettings(self, cfg):
         if cfg.attack_method == "pgd":
