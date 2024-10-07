@@ -259,7 +259,7 @@ class FLTrain():
                 # cfg.final_lr = 0.01
                 # cfg.total_iterations = 200
                 cfg.decay_rate = (cfg.final_lr / cfg.initial_lr) ** (1 / cfg.total_iterations)
-            if cfg.model == 'resnet18':
+            if cfg.n_client == 20:
                 cfg.lr_trigger = cfg.initial_lr * (cfg.decay_rate ** (e - cfg.start_epoch))
             else:
                 cfg.lr_trigger = cfg.initial_lr * (cfg.decay_rate ** (e - cfg.start_epoch))

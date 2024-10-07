@@ -16,6 +16,8 @@ def parse_args():
     desc = "Pytorch Adversarial Attack"
     parser = argparse.ArgumentParser(description=desc)
     parser.add_argument('--config', '-c', type=str, default='train_aisl')
+    parser.add_argument('--task', type=str)
+
     parser.add_argument('--dataset', type=str)
     parser.add_argument('--model', type=str)
     parser.add_argument('--attack', '-a', type=str)

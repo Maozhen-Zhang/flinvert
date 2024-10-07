@@ -15,7 +15,7 @@ sample: 10
 
 ### train setting
 local_epoch: 2
-epoch: 100
+epoch: 400
 batch_size: 64
 lr: 0.01
 momentum: 0.9
@@ -33,7 +33,7 @@ local_epoch_mal: 2
 
 ### wandb
 wandb: False
-project: flinvert-train
+project: flinvert-result
 name: ""
 
 ### save

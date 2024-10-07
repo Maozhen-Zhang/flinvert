@@ -33,7 +33,7 @@ local_epoch_mal: 2
 
 ### wandb
 wandb: False
-project: flinvert-train
+project: flinvert-result
 name: ""
 ### pretrain
 
