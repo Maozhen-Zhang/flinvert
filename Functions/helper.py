@@ -29,6 +29,7 @@ class Helper:
             for batch_id, (data, target) in enumerate(dataloader):
                 data, target = data.to(device), torch.tensor(target).to(device)
                 if IsBackdoor:
+                    # print((trigger[0] * trigger[1])[:, 3:6, 6:9])
                     index = np.where(target.cpu() != cfg.target_label)[0]
                     ori_data, ori_target = data[index], target[index]
                     data, target = poison_method(cfg, (data, target), trigger, IsTest=True)

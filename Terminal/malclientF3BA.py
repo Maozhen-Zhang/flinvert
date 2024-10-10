@@ -125,6 +125,7 @@ class MalClientF3BA(MalClient):
                     continue
 
                 if poison_method is not None:
+                    # print((trigger[0]*trigger[1])[:,3:6,6:9])
                     poison_images, poison_targets = poison_method(cfg, batch, trigger, IsTest=False)
                     data, target = poison_images.to(torch.float32).to(device), poison_targets.to(device)
 
@@ -247,6 +248,7 @@ class MalClientF3BA(MalClient):
                 mal_imgs, mal_labels = copy.deepcopy(imgs), copy.deepcopy(labels)
                 mal_imgs, mal_labels = mal_imgs.to(self.cfg.device), mal_labels.to(self.cfg.device)
                 mal_imgs[:batch_size] = (1 - mask) * mal_imgs[:batch_size] + mask * pattern
+
                 mal_labels[:batch_size].fill_(self.cfg.target_label)
 
                 # self.set_handcrafted_filters2(model, candidate_weights, "conv1.weight")
