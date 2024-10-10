@@ -15,7 +15,7 @@ sample: 10
 
 ### train setting
 local_epoch: 2
-epoch: 2000
+epoch: 2500
 batch_size: 64
 lr: 0.01
 momentum: 0.9
@@ -39,12 +39,12 @@ name: ""
 
 ### save
 load_checkpoint: True
-#load_epoch: 1899
-load_epoch: 599
+load_epoch: 1899
+#load_epoch: 599
 
 save_checkpoint: True
-#checkpoint_path: 0.1-0.5-0.5-1000-epoch_1899.pth
-checkpoint_path: 0.1-0.5-0.5-1000-epoch_599.pth
+checkpoint_path: 0.1-0.5-0.5-1000-epoch_1899.pth
+#checkpoint_path: 0.1-0.5-0.5-1000-epoch_599.pth
 ### flinvert
 epoch_trigger: 5
 lr_trigger: 0.01
@@ -53,7 +53,8 @@ epsilon: 8 / 255.0
 inject_params: True
 threshold: 0.0005
 delta: 0.0001
-inject_epoch: [600, 800]
+#inject_epoch: [600, 800]
+inject_epoch: [1900, 2100]
 
 ### normclip
 normclip_ratio: 0.2
