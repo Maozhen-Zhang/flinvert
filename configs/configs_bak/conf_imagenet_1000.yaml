@@ -14,7 +14,7 @@ sample: 10
 
 ### train setting
 local_epoch: 2
-epoch: 5000
+epoch: 2500
 batch_size: 32
 lr: 0.01
 momentum: 0.9
