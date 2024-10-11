@@ -24,8 +24,13 @@ class MalClient(Client):
         mal_id = cfg.mal_id
         ID = self.ID
 
-        cfg.local_epoch_mal = cfg.local_epoch
-        cfg.lr_poison = cfg.lr
+
+        # cfg.local_epoch_mal = cfg.local_epoch
+        # cfg.lr_poison = cfg.lr
+
+        cfg.local_epoch_mal = 5
+        cfg.lr_poison = cfg.lr * 0.2
+
         cfg.decay_poison = cfg.weight_decay
         cfg.momentum_poison = cfg.momentum
 

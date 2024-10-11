@@ -15,6 +15,11 @@ class MalClientDBA(MalClient):
         image_shape = train_dataset[0][0].shape
         self.pattern = torch.ones(image_shape).to(cfg.device)
         self.mask = torch.zeros_like(self.pattern)[0]
+        if cfg.dataset == 'tiny-imagenet':
+            cfg.coordinate_dba = [
+                [[3, 6], [3, 7], [3, 8], [3, 9]], [[3, 12], [3, 13], [3, 14], [3, 15]],
+                [[6, 6], [6, 7], [6, 8], [6, 9]], [[6, 12], [6, 13], [6, 14], [6, 15]],
+            ]
         coordinate = cfg.coordinate_dba[self.ID % 4]
         for idx, (i, j) in enumerate(coordinate):
             self.mask[i, j] = 1

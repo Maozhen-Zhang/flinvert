@@ -30,7 +30,17 @@ class MalClientCerp(MalClient):
 
         self.pattern = torch.ones(image_shape).to(cfg.device)
         self.mask = torch.zeros_like(self.pattern)[0]
+
+        if cfg.dataset == 'tiny-imagenet':
+            cfg.coordinate_dba = [
+                [[3, 6], [3, 7], [3, 8], [3, 9]], [[3, 12], [3, 13], [3, 14], [3, 15]],
+                [[6, 6], [6, 7], [6, 8], [6, 9]], [[6, 12], [6, 13], [6, 14], [6, 15]],
+            ]
+
         coordinate = cfg.coordinate_dba[self.ID % 4]
+
+
+
         for idx, (i, j) in enumerate(coordinate):
             self.mask[i, j] = 1
         if cfg.normalize:
@@ -83,13 +93,18 @@ class MalClientCerp(MalClient):
             for name, param in model.state_dict().items():
                 normalmodel_updates_dict[name] = torch.zeros_like(param)
                 normalmodel_updates_dict[name] = (param - pre_global_weight[name].to(device))
-            poison_optimizer = torch.optim.SGD(model.parameters(), lr=0.005,
+            if cfg.dataset == 'tiny-imagenet':
+                mal_lr = 0.02
+            else:
+                mal_lr = 0.005
+            poison_optimizer = torch.optim.SGD(model.parameters(), lr=mal_lr,
                                                momentum=momentum,
                                                weight_decay=weight_decay)
             scheduler = torch.optim.lr_scheduler.MultiStepLR(poison_optimizer,
                                                              milestones=[int(0.2 * 5), int(0.8 * 5)], gamma=0.1)
-
-            for internal_epoch in range(1, 3):
+            if cfg.dataset == 'tiny-imagenet':
+                cfg.local_epoch_mal = 5
+            for internal_epoch in range(1, cfg.local_epoch_mal + 1):
                 tq = tqdm(dataloader, desc=f"Epoch {self.current_epoch} Train", disable=True)
                 for batch_idx, batch in enumerate(tq):
                     tq.update(1)
@@ -100,6 +115,8 @@ class MalClientCerp(MalClient):
                         data_ori, target_ori = data[index], target[index]
                         poison_images, poison_targets = poison_method(cfg, batch, trigger, IsTest=False)
                         data, target = poison_images.to(torch.float32).to(device), poison_targets.to(device)
+                    else:
+                        raise "some error cerp"
                     if data.shape[0] < 1:
                          continue
                     poison_optimizer.zero_grad()

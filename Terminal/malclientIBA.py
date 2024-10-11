@@ -99,7 +99,7 @@ class MalClientIBA(MalClient):
         # atk_optimizer = optim.Adam(atkmodel.parameters(), lr=0.0002)
         unet.train()
         # optimizer.zero_grad()
-        for e in range(3):
+        for e in range(5):
             for batch_idx, (data, target) in enumerate(train_loader):
                 bs = data.size(0)
                 data, target = data.to(device), target.to(device)
