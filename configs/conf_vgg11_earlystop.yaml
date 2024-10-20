@@ -3,7 +3,7 @@ task: vgg11-clients-1000
 device: cuda:0
 ### setting
 dataset: cifar10
-model: resnet18
+model: vgg11
 root_path: /home/zmz/datasets/
 normalize: False
 
@@ -26,7 +26,7 @@ heterogenuity: True
 dirichlet_alpha: 0.9
 
 ### backdoor
-poison_epoch: [1900,2100]
+poison_epoch: [600, 2000]
 target_label: 0
 poison_ratio: 0.078125
 local_epoch_mal: 2
@@ -54,7 +54,7 @@ inject_params: True
 threshold: 0.0005
 delta: 0.0001
 #inject_epoch: [600, 800]
-inject_epoch: [1900, 2100]
+inject_epoch: [600, 2000]
 
 ### normclip
 normclip_ratio: 0.2
