@@ -34,7 +34,7 @@ def parse_args():
 
     # normclip_ratio setting
     parser.add_argument('--normclip_ratio', '-nr', type=float)
-
+    parser.add_argument('--clip', action='store_true')
     # flinvert setting
     parser.add_argument('--inject_params', '-ip', action='store_true')
     parser.add_argument('--threshold', type=float)

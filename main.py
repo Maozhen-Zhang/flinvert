@@ -120,7 +120,7 @@ class FLTrain():
             norms = {}
             global_grads = None
             self.updatelr(e)
-            choice_id, mal_id = self.server.getChoiceId()
+            choice_id, mal_id = self.server.getChoiceId(self.clients)
 
             # weight_accumulators = {id: self.server.global_model.state_dict() for id in range(cfg.n_client)}
             for i, ID in enumerate(choice_id):

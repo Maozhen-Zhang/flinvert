@@ -39,7 +39,7 @@ name: ""
 
 ### save
 load_checkpoint: True
-load_epoch: 1899
+load_epoch: 600
 #load_epoch: 599
 
 save_checkpoint: True
