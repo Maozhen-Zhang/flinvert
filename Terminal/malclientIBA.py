@@ -36,7 +36,8 @@ class MalClientIBA(MalClient):
         lr = cfg.lr_poison
         weight_decay = cfg.decay_poison
         momentum = cfg.momentum_poison
-        optimizer_adv = optim.SGD(self.unet.parameters(), lr=lr,
+        lr_unet = 0.05
+        optimizer_adv = optim.SGD(self.unet.parameters(), lr=lr_unet,
                                   weight_decay=weight_decay,
                                   momentum=momentum)
         self.train(cfg, self.local_model, self.dataloader, poison_method=triggerInjectionflinvert)
@@ -99,7 +100,7 @@ class MalClientIBA(MalClient):
         # atk_optimizer = optim.Adam(atkmodel.parameters(), lr=0.0002)
         unet.train()
         # optimizer.zero_grad()
-        for e in range(5):
+        for e in range(10):
             for batch_idx, (data, target) in enumerate(train_loader):
                 bs = data.size(0)
                 data, target = data.to(device), target.to(device)
