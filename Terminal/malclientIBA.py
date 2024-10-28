@@ -23,25 +23,25 @@ class MalClientIBA(MalClient):
         # self.ibaSettings(cfg)
         # self.unet = self.getUnet(cfg)
 
-        self.atk_eps = float(16/255)
-        self.attack_alpha = 0.5
-        self.attack_portion = 1.0
+        self.atk_eps = float(8/255)
+        # self.attack_alpha = 0.5
+        # self.attack_portion = 1.0
 
 
 
 
     def malicious_train(self, cfg):
         from utils.function_backdoor_injection import triggerInjectionflinvert
-
+        print(f"Malicious IBA Trainign")
         lr = cfg.lr_poison
         weight_decay = cfg.decay_poison
         momentum = cfg.momentum_poison
-        lr_unet = 0.05
-        optimizer_adv = optim.SGD(self.unet.parameters(), lr=lr_unet,
+        optimizer_adv = optim.SGD(self.unet.parameters(), lr=0.1,
                                   weight_decay=weight_decay,
                                   momentum=momentum)
+
         self.train(cfg, self.local_model, self.dataloader, poison_method=triggerInjectionflinvert)
-        self.unetTrain(cfg, self.local_model, self.unet, self.dataloader, optimizer_adv, self.atk_eps, self.attack_portion, cfg.device)
+        self.unetTrain(cfg, self.local_model, self.unet, self.dataloader, optimizer_adv, self.atk_eps, cfg.device)
 
 
 
@@ -62,45 +62,64 @@ class MalClientIBA(MalClient):
         criterition = nn.CrossEntropyLoss()
         model.train()
         model.to(device)
-        for batch_idx, batch in enumerate(dataloader):
-            data, targets = batch
-            clean_images, clean_targets = copy.deepcopy(data).to(device), copy.deepcopy(targets).to(device)
-            poison_images, poison_targets = copy.deepcopy(data).to(device), copy.deepcopy(targets).to(device)
-            optimizer.zero_grad()
-            output = model(clean_images)
-            loss_clean = criterition(output, clean_targets)
+        for e in range(cfg.local_epoch_mal):
+            for batch_idx, batch in enumerate(dataloader):
+                data, targets = batch
+                clean_images, clean_targets = copy.deepcopy(data).to(device), copy.deepcopy(targets).to(device)
+                poison_images, poison_targets = copy.deepcopy(data).to(device), copy.deepcopy(targets).to(device)
+                # optimizer.zero_grad()
+                # output = model(clean_images)
+                # loss_clean = criterition(output, clean_targets)
 
-            noise = self.unet(poison_images) * self.atk_eps
-            atkdata = torch.clamp(poison_images + noise, 0, 1)
-            atktarget = torch.tensor(cfg.target_label).repeat(atkdata.shape[0]).to(device)
-            # atkdata.requires_grad_(False)
-            # atktarget.requires_grad_(False)
-            atkdata = atkdata[:int(cfg.poison_ratio * clean_images.shape[0])]
-            atktarget = atktarget[:int(cfg.poison_ratio * clean_images.shape[0])]
-            if len(atkdata) < 1:
-                continue
-            # import IPython
-            # IPython.embed()
-            atkoutput = model(atkdata)
-            loss_poison = criterition(atkoutput, atktarget.detach())
-            loss2 = loss_clean * self.attack_alpha + (1.0 - self.attack_alpha) * loss_poison
-            optimizer.zero_grad()
-            loss2.backward()
+                # noise = self.unet(poison_images) * self.atk_eps
+                # atkdata = torch.clamp(poison_images + noise, 0, 1)
+                # atktarget = torch.tensor(cfg.target_label).repeat(atkdata.shape[0]).to(device)
+                # # atkdata.requires_grad_(False)
+                # # atktarget.requires_grad_(False)
+                # cfg.poison_ratio = 1
+                # atkdata = atkdata[:int(cfg.poison_ratio * clean_images.shape[0])]
+                # atktarget = atktarget[:int(cfg.poison_ratio * clean_images.shape[0])]
+                # if len(atkdata) < 1:
+                #     continue
+                # # import IPython
+                # # IPython.embed()
+                # atkoutput = model(atkdata)
+                # loss_poison = criterition(atkoutput, atktarget.detach())
+                # loss2 = loss_clean * self.attack_alpha + (1.0 - self.attack_alpha) * loss_poison
+                # optimizer.zero_grad()
+                # loss2.backward()
+                # optimizer.step()
 
-            # if batch_idx == 0:
-            #     if cfg.normalize:
-            #         data_ori[:7] = tensor2Denormalize(data_ori[:7], DEVICE=cfg.device, dataset=cfg.dataset)
-            #         data[:7] = tensor2Denormalize(data[:7], DEVICE=cfg.device, dataset=cfg.dataset)
-            #     torchvision.utils.save_image(
-            #         torch.cat([data_ori[:7], data[:7], data_ori[:7] - data[:7], (data_ori[:7] - data[:7]) * 10,
-            #                    (data_ori[:7] - data[:7]) * 100], dim=0),
-            #         f"visual/iba/triggers/trigger.png", nrow=7)
-    def unetTrain(self, cfg, model, unet, train_loader, atkmodel_optimizer, atk_eps, attack_portion, device):
+                noise = self.unet(poison_images) * self.atk_eps
+                atkdata = torch.clamp(poison_images + noise, 0, 1)
+                atktarget = torch.tensor(cfg.target_label).repeat(atkdata.shape[0]).to(device)
+
+                posi_data = copy.deepcopy(clean_images)
+                posi_target = copy.deepcopy(clean_targets)
+                posi_data[:int(cfg.poison_ratio * clean_images.shape[0])] = atkdata[:int(
+                    cfg.poison_ratio * clean_images.shape[0])]
+                posi_target[:int(cfg.poison_ratio * clean_images.shape[0])] = atktarget[:int(
+                    cfg.poison_ratio * clean_images.shape[0])]
+                output = model(posi_data)
+                optimizer.zero_grad()
+                loss = criterition(output, posi_target)
+                loss.backward()
+                optimizer.step()
+
+                # if batch_idx == 0:
+                #     if cfg.normalize:
+                #         data_ori[:7] = tensor2Denormalize(data_ori[:7], DEVICE=cfg.device, dataset=cfg.dataset)
+                #         data[:7] = tensor2Denormalize(data[:7], DEVICE=cfg.device, dataset=cfg.dataset)
+                #     torchvision.utils.save_image(
+                #         torch.cat([data_ori[:7], data[:7], data_ori[:7] - data[:7], (data_ori[:7] - data[:7]) * 10,
+                #                    (data_ori[:7] - data[:7]) * 100], dim=0),
+                #         f"visual/iba/triggers/trigger.png", nrow=7)
+    def unetTrain(self, cfg, model, unet, train_loader, atkmodel_optimizer, atk_eps, device):
         model.eval()
         # atk_optimizer = optim.Adam(atkmodel.parameters(), lr=0.0002)
         unet.train()
         # optimizer.zero_grad()
-        for e in range(10):
+        for e in range(5):
             for batch_idx, (data, target) in enumerate(train_loader):
                 bs = data.size(0)
                 data, target = data.to(device), target.to(device)
@@ -114,9 +133,9 @@ class MalClientIBA(MalClient):
                 noise = unet(data) * atk_eps
                 atkdata = torch.clamp(data + noise, 0, 1)
                 atktarget = torch.tensor(cfg.target_label).repeat(atkdata.shape[0]).to(device)
-                if attack_portion < 1.0:
-                    atkdata = atkdata[:int(attack_portion * bs)]
-                    atktarget = atktarget[:int(attack_portion * bs)]
+                # if attack_portion < 1.0:
+                #     atkdata = atkdata[:int(attack_portion * bs)]
+                #     atktarget = atktarget[:int(attack_portion * bs)]
                     # with torch.no_grad():
                 # atkoutput = wg_clone(atkdata)
                 atkoutput = model(atkdata)

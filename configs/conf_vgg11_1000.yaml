@@ -15,7 +15,7 @@ sample: 10
 
 ### train setting
 local_epoch: 2
-epoch: 2500
+epoch: 2000
 batch_size: 64
 lr: 0.01
 momentum: 0.9
@@ -26,7 +26,7 @@ heterogenuity: True
 dirichlet_alpha: 0.9
 
 ### backdoor
-poison_epoch: [1900,3000]
+poison_epoch: [600,3000]
 target_label: 0
 poison_ratio: 0.078125
 local_epoch_mal: 2
@@ -39,7 +39,7 @@ name: ""
 
 ### save
 load_checkpoint: True
-load_epoch: 1899
+load_epoch: 600
 #load_epoch: 599
 
 save_checkpoint: True

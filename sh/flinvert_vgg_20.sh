@@ -38,3 +38,5 @@ python main.py --config conf_20 --model vgg11 --n_client 20 --defense foolsgold 
 python main.py --config conf_20 --model vgg11 --n_client 20 --defense mkrum --attack neurotoxin --dataset cifar10 --wandb --task cifar_vgg_20
 python main.py --config conf_20 --model vgg11 --n_client 20 --defense rlr --attack neurotoxin --dataset cifar10 --wandb --task cifar_vgg_20
 #
+
+

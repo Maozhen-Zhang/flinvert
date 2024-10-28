@@ -31,6 +31,8 @@ class MalClient(Client):
         cfg.local_epoch_mal = 5
         cfg.lr_poison = cfg.lr * 0.2
 
+
+
         cfg.decay_poison = cfg.weight_decay
         cfg.momentum_poison = cfg.momentum
 

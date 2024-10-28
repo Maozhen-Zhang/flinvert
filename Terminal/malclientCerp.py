@@ -103,7 +103,7 @@ class MalClientCerp(MalClient):
             scheduler = torch.optim.lr_scheduler.MultiStepLR(poison_optimizer,
                                                              milestones=[int(0.2 * 5), int(0.8 * 5)], gamma=0.1)
             if cfg.dataset == 'tiny-imagenet':
-                cfg.local_epoch_mal = 5
+                cfg.local_epoch_mal = 4
             for internal_epoch in range(1, cfg.local_epoch_mal + 1):
                 tq = tqdm(dataloader, desc=f"Epoch {self.current_epoch} Train", disable=True)
                 for batch_idx, batch in enumerate(tq):
