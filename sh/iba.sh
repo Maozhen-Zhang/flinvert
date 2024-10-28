@@ -1,7 +1,10 @@
 
-python main.py --config conf_earlystop --model resnet18 --n_client 1000 --defense fedavg --attack iba --dataset cifar10 --wandb --task cifar_resnet_1000_earlystop
+#python main.py --config conf_earlystop --model resnet18 --n_client 1000 --defense fedavg --attack iba --dataset cifar10 --wandb --task cifar_resnet_1000_earlystop
 
 python main.py --config conf_1000 --model resnet18 --n_client 1000 --defense fedavg --attack iba --dataset cifar10 --wandb --task cifar_resnet_iba
+python main.py --config conf_earlystop --model resnet18 --n_client 1000 --defense fedavg --attack iba --dataset cifar10 --wandb --task cifar_resnet_1000_earlystop
+
+
 python main.py --config conf_1000 --model resnet18 --n_client 1000 --defense deepsight --attack iba --dataset cifar10 --wandb --task cifar_resnet_iba
 python main.py --config conf_1000 --model resnet18 --n_client 1000 --defense foolsgold --attack iba --dataset cifar10 --wandb --task cifar_resnet_iba
 python main.py --config conf_1000 --model resnet18 --n_client 1000 --defense mkrum --attack iba --dataset cifar10 --wandb --task cifar_resnet_iba
