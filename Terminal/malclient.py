@@ -30,6 +30,8 @@ class MalClient(Client):
 
         cfg.local_epoch_mal = 5
         cfg.lr_poison = cfg.lr * 0.2
+        # cfg.lr_poison = cfg.lr * 0.2
+
 
 
 
