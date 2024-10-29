@@ -36,7 +36,7 @@ class MalClientIBA(MalClient):
         lr = cfg.lr_poison
         weight_decay = cfg.decay_poison
         momentum = cfg.momentum_poison
-        optimizer_adv = optim.SGD(self.unet.parameters(), lr=0.1,
+        optimizer_adv = optim.SGD(self.unet.parameters(), lr=0.05,
                                   weight_decay=weight_decay,
                                   momentum=momentum)
 
