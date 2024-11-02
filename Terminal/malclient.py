@@ -28,9 +28,13 @@ class MalClient(Client):
         # cfg.local_epoch_mal = cfg.local_epoch
         # cfg.lr_poison = cfg.lr
 
-        cfg.local_epoch_mal = 5
-        cfg.lr_poison = cfg.lr * 0.2
+        # cfg.local_epoch_mal = 5
         # cfg.lr_poison = cfg.lr * 0.2
+        #  cfg.lr_poison = cfg.lr * 0.2
+        # TODO: 1102 modify to run experiments for attack early stop
+        cfg.local_epoch_mal = 2
+        cfg.lr_poison = cfg.lr
+
 
 
 
