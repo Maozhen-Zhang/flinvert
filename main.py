@@ -274,11 +274,20 @@ class FLTrain():
         wandb.log({"asr": asr, "loss_asr": loss_asr, "Epoch": e}) if cfg.wandb else None
 
     def saveinfo(self, e):
+
         save_dict = {
             "global_weight": self.server.global_model.state_dict(),
             "global_pattern": self.gobal_pattern if cfg.attack != "noatt" and cfg.attack != 'iba' else None,
             "global_mask": self.global_mask if cfg.attack != "noatt" and cfg.attack != 'iba' else None,
         }
+        if cfg.attack != "noatt" and cfg.attack == 'iba':
+            save_dict = {
+                "global_weight": self.server.global_model.state_dict(),
+                "unet": self.clients[cfg.mal_id[0]].unet.state_dict(),
+            }
+
+
+
         if (e+1) % 200 == 0 and cfg.attack == 'noatt' and cfg.defense == 'fedavg':
             Helper.saveinfo(cfg, save_dict, e)
         elif e == cfg.epoch-1:
