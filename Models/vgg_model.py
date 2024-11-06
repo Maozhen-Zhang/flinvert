@@ -1,6 +1,7 @@
 """
 @author: Manaar Alam
 """
+from collections import OrderedDict  # 导入 OrderedDict
 
 import torch.nn as nn
 import torch.nn.functional as F
@@ -44,16 +45,31 @@ class VGG(nn.Module):
         x = first_relu(x)
         return x
 
+    # def _make_layers(self, cfg):
+    #     layers = []
+    #     in_channels = self.in_channels
+    #     for x in cfg:
+    #         if x == 'M':
+    #             layers += [nn.MaxPool2d(kernel_size=2, stride=2)]
+    #         else:
+    #             layers += [nn.Conv2d(in_channels, x, kernel_size=3, padding=1),
+    #                     nn.BatchNorm2d(x),
+    #                     nn.ReLU(inplace=True)]
+    #             in_channels = x
+    #     layers += [nn.AvgPool2d(kernel_size=1, stride=1)]
+    #     return nn.Sequential(*layers)
+
     def _make_layers(self, cfg):
         layers = []
         in_channels = self.in_channels
-        for x in cfg:
+        for idx, x in enumerate(cfg):
             if x == 'M':
-                layers += [nn.MaxPool2d(kernel_size=2, stride=2)]
+                layers.append(('pool' + str(idx), nn.MaxPool2d(kernel_size=2, stride=2)))
             else:
-                layers += [nn.Conv2d(in_channels, x, kernel_size=3, padding=1),
-                        nn.BatchNorm2d(x),
-                        nn.ReLU(inplace=True)]
+                layers.append(('conv' + str(idx), nn.Conv2d(in_channels, x, kernel_size=3, padding=1)))
+                layers.append(('bn' + str(idx), nn.BatchNorm2d(x)))
+                layers.append(('relu' + str(idx), nn.ReLU(inplace=True)))
                 in_channels = x
-        layers += [nn.AvgPool2d(kernel_size=1, stride=1)]
-        return nn.Sequential(*layers)
+        layers.append(('avgpool', nn.AvgPool2d(kernel_size=1, stride=1)))
+        return nn.Sequential(OrderedDict(layers))  # 使用OrderedDict以便按名称访问
+

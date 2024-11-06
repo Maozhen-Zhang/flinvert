@@ -48,7 +48,7 @@ checkpoint_path: 0.1-0.5-0.5-1000-epoch_1899.pth
 ### flinvert
 epoch_trigger: 5
 lr_trigger: 0.01
-epsilon: 8 / 255.0
+epsilon: 4 / 255.0
 
 inject_params: True
 threshold: 0.0005

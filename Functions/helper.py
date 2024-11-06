@@ -57,7 +57,7 @@ class Helper:
 
     @staticmethod
     def saveinfo(cfg, save_dict, e):
-        torch.save(save_dict, f"./checkpoints-new/{cfg.model}-{cfg.dataset}-{cfg.attack}-{cfg.defense}-{cfg.n_client}/{cfg.lr}-{cfg.agglr}-{cfg.agglr}-{cfg.n_client}-epoch_{e}.pth")
+        torch.save(save_dict, f"./checkpoints-new/{cfg.model}-{cfg.dataset}-{cfg.attack}-{cfg.defense}-{cfg.n_client}/{cfg.lr}-{cfg.agglr}-{cfg.agglr}-{cfg.n_client}-{cfg.epsilon}-epoch_{e}.pth")
 
     @staticmethod
     def load_checkpoint(cfg, model):

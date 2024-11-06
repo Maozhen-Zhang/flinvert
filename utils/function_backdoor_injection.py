@@ -62,7 +62,7 @@ def evaluate_trigger(cfg, model, clients, poison_method=None):
                                                      trigger=[client.pattern, client.mask])
         loss_list.append(loss)
         acc_list.append(acc)
-    if len(cfg.mal_id) >= 4:
+    if len(cfg.mal_id) > 0:
         indices = sorted(range(len(acc_list)), key=lambda i: acc_list[i], reverse=True)[:1]
     elif len(cfg.mal_id) >= 100 and len(cfg.mal_id) < 200:
         indices = sorted(range(len(acc_list)), key=lambda i: acc_list[i], reverse=True)[:10]

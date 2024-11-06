@@ -1,6 +1,6 @@
 
 
-#python main.py --config conf_1000 --model resnet18 --n_client 1000 --defense fedavg --attack flinvert --inject_params --dataset cifar10 --wandb --task cifar_resnet_imagenet_1000
+python main.py --config conf_1000 --model resnet18 --n_client 1000 --defense fedavg --attack flinvert --inject_params --dataset cifar10 --wandb --task cifar_resnet_cifar10_1000
 #python main.py --config conf_1000 --model resnet18 --n_client 1000 --defense deepsight --attack flinvert --inject_params --dataset cifar10 --wandb --task cifar_resnet_imagenet_1000
 #python main.py --config conf_1000 --model resnet18 --n_client 1000 --defense foolsgold --attack flinvert --inject_params --dataset cifar10 --wandb --task cifar_resnet_imagenet_1000
 #python main.py --config conf_1000 --model resnet18 --n_client 1000 --defense mkrum --attack flinvert --inject_params --dataset cifar10 --wandb --task cifar_resnet_imagenet_1000
