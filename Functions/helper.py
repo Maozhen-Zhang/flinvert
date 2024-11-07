@@ -57,7 +57,11 @@ class Helper:
 
     @staticmethod
     def saveinfo(cfg, save_dict, e):
-        torch.save(save_dict, f"./checkpoints-new/{cfg.model}-{cfg.dataset}-{cfg.attack}-{cfg.defense}-{cfg.n_client}/{cfg.lr}-{cfg.agglr}-{cfg.agglr}-{cfg.n_client}-{cfg.epsilon}-epoch_{e}.pth")
+        if cfg.epsilon == 8/255.0:
+            epsilon = 8
+        else:
+            epsilon = 4
+        torch.save(save_dict, f"./checkpoints-new/{cfg.model}-{cfg.dataset}-{cfg.attack}-{cfg.defense}-{cfg.n_client}/{cfg.lr}-{cfg.agglr}-{cfg.agglr}-{cfg.n_client}-{epsilon}-epoch_{e}.pth")
 
     @staticmethod
     def load_checkpoint(cfg, model):
