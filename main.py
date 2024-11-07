@@ -1,6 +1,5 @@
-
+import csv
 import warnings
-
 
 # 忽略所有 UserWarning 类型的警告
 warnings.filterwarnings("ignore", category=UserWarning)
@@ -47,6 +46,8 @@ class FLTrain():
 
         self.server = self.getServer(model, tmp_model, defense)
         self.clients = self.getClient(cfg, self.dataset_slices, self.test_dataset)
+        self.record = {'acc': [], 'asr': [],'epoch':[]}
+
 
     def datasetinit(self):
         train_dataset, test_dataset = get_dataset(dataset=cfg.dataset, root_path=cfg.root_path,
@@ -86,8 +87,8 @@ class FLTrain():
                 "dba": MalClientDBA,
                 "flinvert": MalClientFlinvert,
                 "neurotoxin": MalClientNeurotoXin,
-                "a3fl": MalClientA3FL,# too slow
-                "iba": MalClientIBA, # sample
+                "a3fl": MalClientA3FL,  # too slow
+                "iba": MalClientIBA,  # sample
                 "cerp": MalClientCerp,
                 "f3ba": MalClientF3BA,
             }
@@ -106,7 +107,6 @@ class FLTrain():
         print(f"|---Epoch {e} attack  is {cfg.attack}")
         print(f"|---Epoch {e} lr      is {cfg.lr}")
         print(f"|---Epoch {e} lr_inv  is {cfg.lr_trigger}") if cfg.attack == "flinvert" else ""
-
 
     def train_model(self):
         models = [init_model(self.cfg) for _ in range(self.cfg.sample)]
@@ -127,26 +127,29 @@ class FLTrain():
                 weight_accumulators[ID] = self.server.global_model.state_dict()
 
             ### warm up for flinvert
-            if e in range(cfg.poison_epoch[0] - 10, cfg.poison_epoch[1]) and cfg.attack == 'flinvert' and cfg.inject_params:
+            if e in range(cfg.poison_epoch[0] - 10,
+                          cfg.poison_epoch[1]) and cfg.attack == 'flinvert' and cfg.inject_params:
                 param_no_change = get_candidate_params(cfg, self.server.global_model, global_weight_records)
                 # print(f"这里的参数数量是{len(param_no_change)}") if param_no_change is not None else ""
 
             datanums = 0
             for i, ID in enumerate(choice_id):
-                if ID in mal_id and cfg.inject_params and e in range(cfg.poison_epoch[0], cfg.poison_epoch[1]) and cfg.attack == 'flinvert' and e in range(cfg.inject_epoch[0], cfg.inject_epoch[1]):
-
+                if ID in mal_id and cfg.inject_params and e in range(cfg.poison_epoch[0], cfg.poison_epoch[
+                    1]) and cfg.attack == 'flinvert' and e in range(cfg.inject_epoch[0], cfg.inject_epoch[1]):
 
                     if cfg.model == 'resnet18':
                         global_grads, datanum = get_global_grads(global_grads, self.server.global_model,
-                                                             self.clients[ID].train_dataset)
+                                                                 self.clients[ID].train_dataset)
                     elif cfg.model == 'vgg11':
                         global_grads, datanum = get_global_grads_vgg(global_grads, self.server.global_model,
-                                                             self.clients[ID].train_dataset)
+                                                                     self.clients[ID].train_dataset)
                     else:
                         raise ValueError(f"Model {cfg.model} is not supported")
                     datanums += datanum
 
-            if e in range(cfg.poison_epoch[0], cfg.poison_epoch[1]) and cfg.attack == 'flinvert' and cfg.inject_params and e in range(cfg.inject_epoch[0], cfg.inject_epoch[1]):
+            if e in range(cfg.poison_epoch[0],
+                          cfg.poison_epoch[1]) and cfg.attack == 'flinvert' and cfg.inject_params and e in range(
+                    cfg.inject_epoch[0], cfg.inject_epoch[1]):
                 if param_no_change is not None and global_grads is not None:
                     param_not_important_global = get_param_not_important_resnet_from_gradsMean(global_grads,
                                                                                                datanums)
@@ -167,7 +170,8 @@ class FLTrain():
             if cfg.clip == True:
                 for i, ID in enumerate(choice_id):
                     self.server.normclip.run(self.cfg, self.server.global_model.state_dict(), weight_accumulators, ID)
-                    norm = self.server.normclip.get_l2_norm(cfg, self.server.global_model.state_dict(), weight_accumulators, ID)
+                    norm = self.server.normclip.get_l2_norm(cfg, self.server.global_model.state_dict(),
+                                                            weight_accumulators, ID)
 
             for i, ID in enumerate(choice_id):
                 client = self.clients[ID]
@@ -178,6 +182,8 @@ class FLTrain():
                 client.local_train(self.cfg)
                 client.uploadWeight(weight_accumulators)
             self.server.aggregate_weight(weight_accumulators, choice_id)
+
+            self.record['epoch'].append(e)
 
             self.metric(e)
             self.metricbackdoor(e, self.clients, choice_id, mal_id) if cfg.attack != "noatt" else ""
@@ -190,7 +196,7 @@ class FLTrain():
         acc, loss, correct, datasize = Helper.metric(self.cfg, model, test_dataloder)
         print(f"|---Epoch {e}, loss  {loss:.6f}, acc: {acc * 100:.4f}%({correct}/{datasize})")
         wandb.log({"acc": acc, "loss": loss, "Epoch": e}) if cfg.wandb else None
-
+        self.record['acc'].append(acc)
 
     def metricbackdoor(self, e, clients, choice_id, mal_id):
         test_dataloder = self.test_dataloader
@@ -272,6 +278,8 @@ class FLTrain():
                                                                  trigger=trigger)
         print(f"|---Epoch {e}, loss  {loss_asr:.6f}, asr: {asr * 100:.4f}%({correct_asr}/{datasize_asr})")
         wandb.log({"asr": asr, "loss_asr": loss_asr, "Epoch": e}) if cfg.wandb else None
+        self.record['asr'].append(asr)
+
 
     def saveinfo(self, e):
 
@@ -286,12 +294,25 @@ class FLTrain():
                 "unet": self.clients[cfg.mal_id[0]].unet.state_dict(),
             }
 
-
-
-        if (e+1) % 200 == 0 and cfg.attack == 'noatt' and cfg.defense == 'fedavg':
+        if (e + 1) % 200 == 0 and cfg.attack == 'noatt' and cfg.defense == 'fedavg':
             Helper.saveinfo(cfg, save_dict, e)
-        elif e == cfg.epoch-1:
+        elif e == cfg.epoch - 1:
             Helper.saveinfo(cfg, save_dict, e)
+            if cfg.epsilon == 8 / 255.0:
+                epsilon = 8
+            else:
+                epsilon = 4
+            header = ['epoch','acc','asr']
+            data = zip(self.record['epoch'],self.record['acc'],self.record['asr'])
+            # 打开CSV文件以写入模式
+            with open(f'./results/{cfg.attack}/{cfg.model}-{cfg.dataset}-{cfg.defense}-{cfg.n_client}-{cfg.lr}-{cfg.n_client}-{epsilon}-result.csv', mode='w', newline='') as file:
+
+                writer = csv.writer(file)
+                writer.writerow(header)
+
+                # 写入数据
+                writer.writerows(data)
+
 
 if __name__ == '__main__':
     args = parse_args()

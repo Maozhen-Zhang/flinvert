@@ -82,6 +82,7 @@ datasets = 'cifar10'
 # model_pth = '0.01-1-1-1000-epoch_2999.pth'
 # model_pth = '0.1-0.5-0.5-1000-epoch_2499.pth'
 model_pth = '0.01-0.5-0.5-1000-epoch_2499.pth'
+model_pth = '0.01-0.5-0.5-1000-4-epoch_2999.pth'
 target_file = f'{model_name}-{datasets}-{attack}-fedavg-1000/{model_pth}'
 save_dict = torch.load(f'./checkpoints-new/{target_file}')
 print(save_dict.keys())

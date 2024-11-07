@@ -75,6 +75,13 @@ class GradCAM():
     @staticmethod
     def show_cam_on_image(image, cam, savepath, h=32, w=32, ):
         # image: [H,W,C]
+
+
+
+
+
+
+        ................
         h, w = image.shape[:2]
 
         cam = cv2.resize(cam, (h, w))
